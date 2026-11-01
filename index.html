@@ -4,48 +4,72 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Form 37</title>
-  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/2991/2991112.png" type="image/x-icon">
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/4152/4152123.png" type="image/x-icon">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; background: #FFFFF0; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
     .container { width: 100%; height: 100vh; height: -webkit-fill-available; display: flex; flex-direction: column; }
     .iframe-container { flex: 1; width: 100%; height: 100%; position: relative; overflow: hidden; }
     iframe { width: 100%; height: 100%; border: none; background: #f1f5f9; }
-    /* CSS Loading Circular Progress + Glassmorphism (Sama seperti sebelumnya) */
-    .loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 50%, #dbeafe 100%); z-index: 10; transition: opacity 0.5s ease; }
+    /* ===== LOADING SCREEN (Circular Progress + Persentase) ===== */
+    .loading { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      display: flex; flex-direction: column; align-items: center; justify-content: center; 
+      background: linear-gradient(135deg, #e0e7ff 0%, #f1f5f9 50%, #dbeafe 100%); 
+      z-index: 10; transition: opacity 0.5s ease; 
+    }
     .loading.hidden { opacity: 0; pointer-events: none; }
-    .glass-card { padding: 50px 60px; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border-radius: 28px; border: 1px solid rgba(255, 255, 255, 0.4); box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5); display: flex; flex-direction: column; align-items: center; gap: 24px; }
-    .spinner-wrap { position: relative; width: 64px; height: 64px; }
-    .spinner-ring { width: 100%; height: 100%; border-radius: 50%; border: 4px solid rgba(103, 58, 183, 0.15); border-top-color: #673ab7; border-right-color: #512da8; animation: spin 0.9s linear infinite; box-shadow: 0 2px 8px rgba(103, 58, 183, 0.2); }
-    .spinner-inner { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 8px; height: 8px; background: #673ab7; border-radius: 50%; box-shadow: 0 0 12px rgba(103, 58, 183, 0.5); animation: pulse 1.5s ease-in-out infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes pulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.6; } }
-    .loading-text { font-size: 0.9rem; font-weight: 600; color: #312e81; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5); }
+    /* Container loading - tanpa kotak/border */
+    .progress-container { position: relative; width: 90px; height: 90px; margin-bottom: 20px; }
+    .progress-svg { width: 100%; height: 100%; transform: rotate(-90deg); filter: drop-shadow(0 2px 8px rgba(103, 58, 183, 0.2)); }
+    .progress-track { fill: none; stroke: rgba(103, 58, 183, 0.15); stroke-width: 5; }
+    .progress-fill { fill: none; stroke: url(#progressGradient); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 251.2; stroke-dashoffset: 251.2; transition: stroke-dashoffset 0.1s linear; }
+    .progress-percent { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.4rem; font-weight: 700; color: #312e81; letter-spacing: 0.5px; text-shadow: 0 1px 3px rgba(255, 255, 255, 0.6); font-variant-numeric: tabular-nums; }
+    .progress-percent::after { content: '%'; font-size: 0.9rem; font-weight: 600; margin-left: 1px; opacity: 0.7; }
+    .loading-text { font-size: 0.85rem; font-weight: 600; color: #312e81; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5); opacity: 0.85; }
     .loading-text::after { content: ''; animation: dots 1.5s infinite; }
     @keyframes dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80%, 100% { content: '...'; } }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Loading Screen (Circular Progress + Persentase, tanpa kotak) -->
     <div class="loading" id="loading">
-      <div class="glass-card">
-        <div class="spinner-wrap">
-          <div class="spinner-ring"></div>
-          <div class="spinner-inner"></div>
-        </div>
-        <p class="loading-text">Memuat Aplikasi</p>
+      <div class="progress-container">
+        <svg class="progress-svg" viewBox="0 0 90 90">
+          <defs>
+            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#673ab7"/>
+              <stop offset="100%" stop-color="#512da8"/>
+            </linearGradient>
+          </defs>
+          <circle class="progress-track" cx="45" cy="45" r="40"/>
+          <circle class="progress-fill" id="progressFill" cx="45" cy="45" r="40"/>
+        </svg>
+        <div class="progress-percent" id="progressPercent">0</div>
       </div>
+      <p class="loading-text">Memuat Aplikasi</p>
     </div>
+
     <div class="iframe-container">
       <iframe id="appFrame" src="" allow="fullscreen; camera; microphone" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads"></iframe>
     </div>
   </div>
 
   <script>
-    var APP_URL = "https://script.google.com/macros/s/AKfycbw6dYVA2Rrza2cf7rcP9-3OuO1gc5fCQEUyM3nGqe2vuM2ZfjeIaxCYAL729lZDApz-Gg/exec";
+    // =============================================
+    // URL Google Apps Script Anda
+    // =============================================
+    var APP_URL = "https://script.google.com/macros/s/AKfycbzvTDd_6utYH-AfPueVEooSVlyzUHo6IN6kJx-Lx3DXR8cJ6u6taZJk026vmk45GHTXOw/exec";
+    
     var appFrame = document.getElementById('appFrame');
     var loading = document.getElementById('loading');
+    var progressFill = document.getElementById('progressFill');
+    var progressPercent = document.getElementById('progressPercent');
 
+    // =============================================
+    // HANDLER REQUEST DARI IFRAME
+    // =============================================
     window.addEventListener('message', function(event) {
       try {
         var data = event.data;
@@ -61,30 +85,60 @@
       } catch(e) { console.warn('PostMessage error:', e); }
     });
 
+    // =============================================
+    // LOGIKA DELAY 5 DETIK + PERSENTASE
+    // =============================================
+    var MIN_LOAD_TIME = 5000; // 5 detik
+    var CIRCUMFERENCE = 251.2; // 2 * π * r (r=40)
     var startTime = Date.now();
-    var MIN_LOAD_TIME = 3000;
+    var progressInterval = null;
     
+    function updateProgress() {
+        var elapsed = Date.now() - startTime;
+        var percent = Math.min(100, Math.round((elapsed / MIN_LOAD_TIME) * 100));
+        progressPercent.textContent = percent;
+        var offset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
+        progressFill.style.strokeDashoffset = offset;
+        if (percent >= 100) clearInterval(progressInterval);
+    }
+
     function loadApp() {
-      var params = new URLSearchParams(window.location.search);
-      var id = params.get('id');
       var targetUrl = APP_URL;
+      var formId = '';
       
-      if (id) {
-        targetUrl += "?page=respond&id=" + id;
-        // Teruskan semua parameter pra-formulir (pf_*)
+      // 1. Cek apakah ada path (contoh: form37.pages.dev/ID_FORM)
+      var path = window.location.pathname;
+      if (path && path.length > 1 && path !== '/') {
+        formId = path.substring(1); // Hapus slash pertama
+      }
+      
+      // 2. Cek apakah ada query ?id= (fallback)
+      var params = new URLSearchParams(window.location.search);
+      if (!formId && params.get('id')) {
+        formId = params.get('id');
+      }
+      
+      if (formId) {
+        // Jika ada ID Form, paksa masuk ke halaman responden
+        targetUrl += "?page=respond&id=" + formId;
+        // Teruskan semua parameter tambahan (seperti pf_ untuk pra-formulir)
         params.forEach(function(value, key) {
           if (key !== 'id' && key !== 'page') {
             targetUrl += "&" + key + "=" + encodeURIComponent(value);
           }
         });
       } else {
+        // Jika tidak ada ID, buka halaman utama (Editor/Login)
         targetUrl += "?page=home";
       }
       
       appFrame.src = targetUrl;
     }
     
-    function hideLoading() { loading.classList.add('hidden'); }
+    function hideLoading() { 
+      if(progressInterval) clearInterval(progressInterval);
+      loading.classList.add('hidden'); 
+    }
 
     appFrame.addEventListener('load', function() {
       var elapsedTime = Date.now() - startTime;
@@ -93,7 +147,11 @@
       else { hideLoading(); }
     });
     
-    window.addEventListener('DOMContentLoaded', loadApp);
+    window.addEventListener('DOMContentLoaded', function() {
+      loadApp();
+      // Mulai animasi persentase setiap 30ms
+      progressInterval = setInterval(updateProgress, 30);
+    });
   </script>
 </body>
 </html>
